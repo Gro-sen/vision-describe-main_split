@@ -11,7 +11,7 @@
 
 ###  核心功能
 - **实时视频流处理**：支持RTSP协议视频流的实时捕获和展示
-- **AI智能识别**：集成Ollama Qwen2.5-VL大模型，提供精准的图像内容识别
+- **AI智能识别**：集成Ollama Qwen3-VL大模型，提供精准的图像内容识别
 - **实时通信**：基于WebSocket的实时数据推送，零延迟获取识别结果
 - **历史记录**：智能存储和管理识别历史，支持数据回溯
 
@@ -31,7 +31,7 @@
 ### 后端技术栈
 - **Web框架**：FastAPI - 高性能异步Web框架
 - **视频处理**：OpenCV - 专业级视频处理库
-- **AI模型**：Ollama + Qwen2.5-VL - 多模态大语言模型
+- **AI模型**：Ollama + Qwen3-VL - 多模态大语言模型
 - **实时通信**：WebSocket - 双向实时数据传输
 - **异步处理**：asyncio + ThreadPoolExecutor - 高并发处理
 
@@ -69,7 +69,7 @@ ollama serve
 **下载所需模型：**
 
 ```bash
-ollama pull qwen2.5vl:7b
+ollama pull qwen3-vl:8b
 ollama pull deepseek-r1:7b
 ```
 

@@ -2,12 +2,15 @@ import os
 import hashlib
 from datetime import datetime
 import json
+import threading
 KB_SOURCE_DIR = "kb/source"
+KB_INDEX_DIR = "kb/index"
 
 def write_alarm_case_to_kb(case: dict):
     """将报警案例写入知识库（Markdown格式）"""
     os.makedirs(KB_SOURCE_DIR, exist_ok=True)
-    
+    os.makedirs(KB_INDEX_DIR, exist_ok=True)
+
     # 调试：打印case的所有键
     print(f"【DEBUG】case字典的键: {list(case.keys())}")
     if 'metadata' in case:
@@ -135,4 +138,53 @@ def write_alarm_case_to_kb(case: dict):
         f.write(content)
     print(f"【知识库】案例已保存：{path}")
     print(f"【知识库】模型: {model_used}, 参考案例数: {kb_cases_used}")
+    trigger_index_update()
     return path
+
+def trigger_index_update():
+    """触发知识库索引更新（异步）"""
+    def _update_index():
+        try:
+            # 延迟5秒，避免频繁重建
+            import time
+            time.sleep(5)
+            
+            # 检查是否有kb模块
+            try:
+                from kb.indexing import build_index
+                
+                print("【知识库】开始重建索引...")
+                
+                # 重建索引
+                result = build_index(
+                    data_dir='kb/source',
+                    index_path='kb/index/faiss_bge.index',
+                    meta_path='kb/index/docs_bge.pkl',
+                    model_name='BAAI/bge-small-zh-v1.5'
+                )
+                
+                if result['status'] == 'success':
+                    print(f"✅ 索引重建成功！文档块数量: {result['chunks_count']}")
+                    
+                    # 🔥 关键修改：延迟刷新缓存，避免影响正在进行的查询
+                    time.sleep(2)  # 等待2秒，让当前查询完成
+                    
+                    # 刷新检索器缓存，让新索引立即生效
+                    try:
+                        from kb.retriever import refresh_cache
+                        refresh_cache()
+                        print("✅ 检索器缓存已刷新，新索引立即生效")
+                    except ImportError as e:
+                        print(f"⚠️ 无法刷新缓存: {e}")
+                        
+                else:
+                    print(f"❌ 索引重建失败: {result.get('message', '未知错误')}")
+                    
+            except ImportError as e:
+                print(f"【WARN】无法导入索引模块: {e}")
+                
+        except Exception as e:
+            print(f"【ERROR】索引更新线程异常: {e}")
+        
+    # 启动异步线程更新索引
+    threading.Thread(target=_update_index, daemon=True).start()

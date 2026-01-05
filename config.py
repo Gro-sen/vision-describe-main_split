@@ -62,7 +62,7 @@ class DoubleBuffer:
 
 class ModelConfig:
     # 视觉模型
-    VISION_MODEL = "qwen2.5vl:7b"
+    VISION_MODEL = "qwen3-vl:8b"
     VISION_TEMPERATURE = 0.1
     
     # 推理语言模型

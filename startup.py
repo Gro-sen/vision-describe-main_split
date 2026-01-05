@@ -48,7 +48,7 @@ def initialize_system():
         models = ollama.list()
         installed_models = [m['model'] for m in models['models']]
         
-        required_models = ["qwen2.5vl:7b", "deepseek-r1:7b"]
+        required_models = ["qwen3-vl:8b", "deepseek-r1:7b"]
         for model in required_models:
             if model in installed_models:
                 print(f"✓ 模型已安装: {model}")

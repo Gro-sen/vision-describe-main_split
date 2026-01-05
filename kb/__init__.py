@@ -89,6 +89,27 @@ class KnowledgeBase:
             ).strftime("%Y-%m-%d %H:%M:%S")
         
         return stats
+    
+    def check_index_health(self):
+        """检查索引健康状况"""
+        import os
+        
+        index_file = os.path.join(self.index_dir, "faiss_bge.index")
+        meta_file = os.path.join(self.index_dir, "docs_bge.pkl")
+        
+        if not os.path.exists(index_file) or not os.path.exists(meta_file):
+            return {"status": "missing", "message": "索引文件不存在"}
+        
+        try:
+            from .retriever import load_index
+            index, meta, model = load_index()
+            return {
+                "status": "healthy",
+                "index_size": index.ntotal,
+                "meta_count": len(meta) if meta else 0
+            }
+        except Exception as e:
+            return {"status": "corrupted", "message": str(e)}
 
 # 创建全局知识库实例
 kb_instance = KnowledgeBase()

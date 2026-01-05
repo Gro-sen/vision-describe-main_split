@@ -45,9 +45,8 @@ class ReasoningModel:
 ## 重要指令：
 - 你只能输出 JSON 格式，不能有任何其他文字
 - JSON 必须严格符合指定的格式
-- 所有数值必须是纯数字，不要进行计算（如0.8728 + 0.8705 = 1.7433）
+- 所有数值必须是纯数字
 - confidence 字段必须是 0.0 到 1.0 之间的纯数字
-- 不要输出数学表达式，只输出计算结果
 - 不要解释，不要注释，不要多余的空格
 
 ## 分析要求：
@@ -78,24 +77,7 @@ class ReasoningModel:
   }}
 }}
 
-## 正确的JSON示例：
-{{
-  "final_decision": {{
-    "is_alarm": "是",
-    "alarm_level": "一般",
-    "alarm_reason": "人员未佩戴工牌",
-    "confidence": 0.8
-  }},
-  "analysis": {{
-    "risk_assessment": "存在身份验证风险",
-    "recommendation": "通知安保人员核实身份",
-    "rules_applied": ["工牌检查规则"]
-  }},
-  "metadata": {{
-    "model": "{self.model_name}",  # 直接使用模型名称
-    "timestamp": "2024-01-01T00:00:00"
-  }}
-}}
+
 
 ## 特别注意：
 - confidence字段必须是0.0到1.0之间的数字，例如0.75、0.85

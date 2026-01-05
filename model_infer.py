@@ -63,7 +63,7 @@ def vision_model_analysis(frame):
 }
 """
     resp = ollama.chat(
-        model="qwen2.5vl:7b",
+        model="qwen3-vl:8b",
         messages=[{"role": "user", "content": vision_prompt, "images": [image_b64]}]
     )
     
@@ -107,8 +107,30 @@ def send_to_model(frame):
         print(f"【ERROR】推理模型异常: {e}")
         import traceback
         traceback.print_exc()
-        # 使用后备决策
-        reasoning_result = reasoning_model.get_fallback_decision(vision_facts)
+        try:
+            similar_cases = []
+            reasoning_result = reasoning_model.get_fallback_decision(vision_facts, similar_cases)
+        except Exception as fallback_error:
+            print(f"【ERROR】后备决策也失败: {fallback_error}")
+            # 返回最低限度的决策
+            reasoning_result = {
+                "final_decision": {
+                    "is_alarm": "否",
+                    "alarm_level": "无",
+                    "alarm_reason": f"推理失败: {str(e)[:50]}",
+                    "confidence": 0.0
+                },
+                "analysis": {
+                    "risk_assessment": "推理系统错误",
+                    "recommendation": "检查推理模型和知识库",
+                    "rules_applied": ["错误处理规则"]
+                },
+                "metadata": {
+                    "model": "后备规则引擎",
+                    "timestamp": datetime.now().isoformat(),
+                    "kb_cases_used": 0
+                }
+            }
     
     final_decision = reasoning_result.get("final_decision", {})
     analysis = reasoning_result.get("analysis", {})

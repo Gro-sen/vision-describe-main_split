@@ -5,12 +5,14 @@ from typing import Dict, Any, List
 from kb import KnowledgeBase
 from datetime import datetime
 from config import model_config
+from alibaba_openai_client import AlibabaOpenAIClient
 class ReasoningModel:
     """推理语言大模型"""
-    def __init__(self, model_name: str = "deepseek-r1:7b"):
-        self.model_name = model_name
+    def __init__(self, model_name: str = "qwen3-max"): 
+        self.model_name = model_name 
         self.kb = KnowledgeBase()
-    
+        # 初始化阿里云客户端
+        self.cloud_client = AlibabaOpenAIClient()
     def generate_prompt(self, vision_facts: Dict[str, Any], 
                    similar_cases: List[Dict] = None) -> str:
         """生成推理模型的提示词"""
@@ -161,15 +163,12 @@ class ReasoningModel:
         prompt = self.generate_prompt(vision_facts, similar_cases)
         
         try:
-            # 调用语言模型
-            response = ollama.chat(
-                model=self.model_name,
-                messages=[{"role": "user", "content": prompt}],
-                options={"temperature": model_config.REASONING_TEMPERATURE}
-            )    
-            
             # 获取原始文本
-            raw_text = response["message"]["content"].strip()
+            print(f"【推理模型】调用阿里云API，模型: {self.model_name}")
+            raw_text = self.cloud_client.call_text_api(
+                prompt=prompt, 
+                model=self.model_name
+            )
             print(f"【DEBUG】模型原始输出:\n{raw_text}\n")
             
             # 保存原始输出用于调试

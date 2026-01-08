@@ -3,12 +3,18 @@ import base64
 import json
 import threading
 import time
+from dotenv import load_dotenv
+load_dotenv()
 from datetime import datetime
 import ollama
 from config import latest_frame_lock, broadcast_queue, recognition_results, inference_lock, last_infer_time
 from sound import play_alarm_sound
 from config import ALARM_DIR
 import os
+from alibaba_openai_client import AlibabaOpenAIClient  # 替换旧的导入
+# 初始化
+vision_client = AlibabaOpenAIClient()
+
 
 # 导入新模块
 from reasoning_model import reasoning_model
@@ -42,6 +48,7 @@ def save_alarm_image(frame, alert_level, case_id=None):
 
 def vision_model_analysis(frame):
     """视觉大模型分析（第一阶段）"""
+    
     image_b64 = frame_to_base64(frame)
     
     vision_prompt = """
@@ -62,19 +69,21 @@ def vision_model_analysis(frame):
   }
 }
 """
-    resp = ollama.chat(
-        model="qwen3-vl:8b",
-        messages=[{"role": "user", "content": vision_prompt, "images": [image_b64]}]
-    )
-    
-    raw_text = resp["message"]["content"]
     try:
-        facts = json.loads(raw_text)
+        raw_output = vision_client.call_multimodal_api(
+            prompt=vision_prompt,
+            image_b64=image_b64,
+            model="qwen-vl-max" 
+        )
+        # 使用你项目中现有的 JSONFixer 解析
+        from fix_json_output import JSONFixer
+        facts = JSONFixer.safe_parse(raw_output)
+        return facts
     except Exception as e:
-        print(f"【WARN】视觉模型输出无法解析: {e}")
+        print(f"【WARN】阿里云视觉分析失败: {e}")
+        # 可选：启用本地Qwen3-VL后备方案
+        # resp = ollama.chat(model="qwen3-vl:8b", ...)
         return None
-    
-    return facts
 
 def send_to_model(frame):
     """完整的模型推理流程（双模型）"""

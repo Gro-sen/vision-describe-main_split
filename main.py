@@ -8,7 +8,8 @@ import json
 import threading
 import time
 from datetime import datetime
-
+from dotenv import load_dotenv
+load_dotenv()
 # 正确导入 config 模块中的变量
 import config
 

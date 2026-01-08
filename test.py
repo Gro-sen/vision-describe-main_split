@@ -1,65 +1,32 @@
-# test_minimal_retrieval.py
-import sys
+# test_with_real_image.py
+import cv2
+import base64
+from alibaba_openai_client import AlibabaOpenAIClient
+from dotenv import load_dotenv
+load_dotenv()
+# 1. 读取一张真实人物图像
+real_image_path = "D:\\code\\python\\git\\vision-describe-main_split\\alarms\\20260106_135606_025_980a96f7_severe.jpg"  # 替换为你的图片路径
+frame = cv2.imread(real_image_path)
+if frame is None:
+    print("❌ 无法读取图像，请检查路径")
+    exit()
 
-def minimal_test():
-    """最小化测试，排除所有可能的干扰"""
-    print("最小化知识库检索测试")
-    print("="*50)
-    
-    try:
-        # 直接导入retriever模块
-        sys.path.insert(0, '.')
-        from kb.retriever import query
-        
-        print("1. 导入模块成功")
-        
-        # 设置超时
-        import threading
-        import queue
-        
-        result_queue = queue.Queue()
-        error_queue = queue.Queue()
-        
-        def run_query():
-            try:
-                results = query("人员未佩戴工牌", top_k=3)
-                result_queue.put(results)
-            except Exception as e:
-                error_queue.put(e)
-        
-        print("2. 启动查询线程...")
-        thread = threading.Thread(target=run_query)
-        thread.daemon = True
-        thread.start()
-        
-        # 等待30秒
-        print("3. 等待查询完成...")
-        for i in range(30):
-            if not thread.is_alive():
-                break
-            print(f"   等待 {i+1}/30 秒...")
-            thread.join(timeout=1)
-        
-        if thread.is_alive():
-            print("❌ 查询超时（30秒）")
-            return
-        
-        if not error_queue.empty():
-            error = error_queue.get()
-            print(f"❌ 查询错误: {error}")
-            return
-        
-        results = result_queue.get()
-        print(f"✅ 查询成功！")
-        print(f"   返回 {len(results)} 个结果")
-        
-        for i, r in enumerate(results):
-            print(f"   {i+1}. {r['source']} - {r['score']:.3f}")
-            
-    except Exception as e:
-        print(f"❌ 测试失败: {e}")
-        import traceback
-        traceback.print_exc()
+# 2. 转换为Base64
+def frame_to_base64(frame):
+    _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+    return base64.b64encode(buf).decode('utf-8')
 
-if __name__ == "__main__":
-    minimal_test()
+image_b64 = frame_to_base64(frame)
+
+# 3. 使用极简但强制的prompt
+test_prompt = """你是一个安防系统。分析图像，只输出JSON，格式必须如下：
+{
+"has_person": true或false,
+"badge_status": "佩戴"或"未佩戴"或"无法确认"或"不适用",
+"scene_summary": "一句话描述画面"
+}
+如果看到人，has_person必须为true。"""
+
+client = AlibabaOpenAIClient()
+result = client.call_multimodal_api(test_prompt, image_b64, model="qwen-vl-max")
+print("最终测试结果：", result)

@@ -61,14 +61,6 @@ class DoubleBuffer:
             self.front_buffer = self.back_buffer
 
 class ModelConfig:
-    # 视觉模型
-    VISION_MODEL = "qwen3-vl:8b"
-    VISION_TEMPERATURE = 0.1
-    
-    # 推理语言模型
-    REASONING_MODEL = "deepseek-r1:7b"
-    REASONING_TEMPERATURE = 0.2
-    
     # 知识库配置
     KB_SIMILARITY_THRESHOLD = 0.3
     KB_RETRIEVAL_TOP_K = 3

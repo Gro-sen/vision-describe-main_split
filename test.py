@@ -1,32 +1,36 @@
-# test_with_real_image.py
-import cv2
-import base64
-from alibaba_openai_client import AlibabaOpenAIClient
+# test_fix.py
 from dotenv import load_dotenv
 load_dotenv()
-# 1. 读取一张真实人物图像
-real_image_path = "D:\\code\\python\\git\\vision-describe-main_split\\alarms\\20260106_135606_025_980a96f7_severe.jpg"  # 替换为你的图片路径
-frame = cv2.imread(real_image_path)
-if frame is None:
-    print("❌ 无法读取图像，请检查路径")
-    exit()
+from reasoning_model import reasoning_model
 
-# 2. 转换为Base64
-def frame_to_base64(frame):
-    _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
-    return base64.b64encode(buf).decode('utf-8')
+def test_fix():
+    """测试修复后的效果"""
+    
+    # 模拟视觉分析结果
+    vision_facts = {
+        "has_person": True,
+        "badge_status": "无法确认",
+        "enter_restricted_area": False,
+        "has_fire_or_smoke": False,
+        "has_electric_risk": False,
+        "scene_summary": "一名男子在室内低头看东西，环境为普通房间。"
+    }
+    
+    print("🧪 测试推理模型修正...")
+    print(f"输入视觉事实: {vision_facts['scene_summary']}")
+    
+    result = reasoning_model.infer(vision_facts)
+    
+    print(f"\n📋 测试结果:")
+    print(f"是否报警: {result['final_decision']['is_alarm']}")
+    print(f"报警级别: {result['final_decision']['alarm_level']}")
+    print(f"风险评估: {result['analysis']['risk_assessment']}")
+    
+    # 检查是否还有"正常案例"的幻觉
+    if "正常案例" in str(result):
+        print("❌ 测试失败：仍然存在'正常案例'幻觉")
+    else:
+        print("✅ 测试通过：已消除'正常案例'幻觉")
 
-image_b64 = frame_to_base64(frame)
-
-# 3. 使用极简但强制的prompt
-test_prompt = """你是一个安防系统。分析图像，只输出JSON，格式必须如下：
-{
-"has_person": true或false,
-"badge_status": "佩戴"或"未佩戴"或"无法确认"或"不适用",
-"scene_summary": "一句话描述画面"
-}
-如果看到人，has_person必须为true。"""
-
-client = AlibabaOpenAIClient()
-result = client.call_multimodal_api(test_prompt, image_b64, model="qwen-vl-max")
-print("最终测试结果：", result)
+if __name__ == "__main__":
+    test_fix()

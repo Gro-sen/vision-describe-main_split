@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -8,8 +10,7 @@ import json
 import threading
 import time
 from datetime import datetime
-from dotenv import load_dotenv
-load_dotenv()
+
 # 正确导入 config 模块中的变量
 import config
 
@@ -209,9 +210,9 @@ async def startup():
 # 注意：这部分放在最后，避免影响其他路由
 if KB_AVAILABLE:
     app.include_router(kb_router)
-    print("✓ 知识库API已启用")
+    print(" 知识库API已启用")
 else:
-    print("⚠ 知识库API未启用")
+    print(" 知识库API未启用")
 
 # ===================== 主程序入口 =====================
 if __name__ == "__main__":

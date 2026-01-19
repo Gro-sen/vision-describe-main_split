@@ -1,10 +1,11 @@
+from dotenv import load_dotenv
+load_dotenv()
 import cv2
 import base64
 import json
 import threading
 import time
-from dotenv import load_dotenv
-load_dotenv()
+
 from datetime import datetime
 import ollama
 from config import latest_frame_lock, broadcast_queue, recognition_results, inference_lock, last_infer_time

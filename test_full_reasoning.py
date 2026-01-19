@@ -1,4 +1,6 @@
 # test_full_reasoning.py
+from dotenv import load_dotenv
+load_dotenv()
 from reasoning_model import reasoning_model
 import json
 

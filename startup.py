@@ -1,9 +1,10 @@
+from dotenv import load_dotenv
+load_dotenv()
 import os
 import sys
 import time
 from datetime import datetime
-from dotenv import load_dotenv
-load_dotenv()
+
 def initialize_system():
     """系统初始化"""
     print("=" * 60)

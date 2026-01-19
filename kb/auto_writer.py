@@ -102,17 +102,9 @@ def write_alarm_case_to_kb(case: dict):
 ## 报警原因
 {alarm_reason}
 
-## 视觉分析结果
-```json
-{json.dumps(case.get('vision_facts', {}), ensure_ascii=False, indent=2)}
 ## 最终决策
 {json.dumps(final_decision, ensure_ascii=False, indent=2)}
 
-## 风险评估
-{risk_assessment}
-
-## 推荐措施
-{recommendation}
 ## 系统信息
 *使用模型: {model_used}
 
@@ -129,7 +121,6 @@ def write_alarm_case_to_kb(case: dict):
 {alarm_level}级报警
 {scene_summary[:50].replace(',', '')}
 {alarm_reason[:50].replace(',', '')}
-{model_used}
 
 *案例ID: {case_id}
 *生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
@@ -138,7 +129,7 @@ def write_alarm_case_to_kb(case: dict):
         f.write(content)
     print(f"【知识库】案例已保存：{path}")
     print(f"【知识库】模型: {model_used}, 参考案例数: {kb_cases_used}")
-    trigger_index_update()
+    trigger_index_update() 
     return path
 
 def trigger_index_update():
